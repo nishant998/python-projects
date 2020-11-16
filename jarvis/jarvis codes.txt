@@ -1,0 +1,102 @@
+import pyttsx3
+import speech_recognition as sr
+import datetime
+import wikipedia
+import os
+import webbrowser
+import datetime
+# import pyaudio
+
+engine = pyttsx3.init('sapi5')
+voices = engine.getProperty('voices')
+engine.setProperty('voice', 'HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Speech\Voices\Tokens\TTS_MS_EN-US_ZIRA_11.0')
+
+
+def speak(strto):
+    newcomer = 130
+    engine.setProperty('rate', newcomer)
+    engine.say(strto)
+    engine.runAndWait()
+
+
+def wishes():
+    hour = datetime.datetime.now().hour
+    if hour >= 3 and hour < 12:
+        print("Good  morning sir , How may i help you")
+        speak("Good  morning sir , How may i help you")
+    elif hour >= 12 and hour < 16:
+        print("Good  afternoon sir , How may i help you")
+        speak("Good  afternoon sir , How may i help you")
+    elif hour >= 16 and hour < 20:
+        speak("Good  evening sir , How may i help you")
+        print("Good evening")
+    elif hour >= 20 and hour < 3:
+        speak("Good  night sir , How may i help you")
+        print("Good night")
+    else:
+        speak("Set your date and time sir , it may be wrong")
+
+
+def take_commands():
+    # take speech command from user and convert it to string
+    r = sr.Recognizer()
+    with sr.Microphone() as source:
+        print("Listening...")
+        r.pause_threshold = 1
+        r.energy_threshold = 700
+        audio = r.listen(source)
+
+    try:
+        print("Recognizing...")
+        query = r.recognize_google(audio, language='en-in')  # Using google for voice recognition.
+        print(f"User said: {query}\n")  # User query will be printed.
+
+    except Exception as e:
+        # print(e)
+        print("Say that again please...")  # Say that again will be printed in case of improper voice
+        return "None"  # None string will be returned
+    return query
+
+
+def apply_command(query):
+    if 'wikipedia' in query:
+        query.replace('wikipedia', '')
+        result = wikipedia.summary(query, sentences=2)
+        print(result)
+        speak(result)
+    elif 'play music' in query:
+        mus_dir = 'E:\\songs.mp3'
+        songs = os.listdir(mus_dir)
+        print(songs)
+        os.startfile(os.path.join(mus_dir, songs[0]))
+
+    elif 'open codeblocks' or 'open code blocks' or 'open code block' or 'open codeblock' in query:
+        try:
+            speak("Opening Code blocks , please wait")
+            os.startfile("C:\\Program Files (x86)\\CodeBlocks\\codeblocks.exe")
+        except Exception as e:
+            speak("There is some error")
+            print("There is some error")
+
+    elif 'website' and 'open' in query:
+        newquery = query.replace('website', '').replace('open', '').replace(" ", "")
+        print(newquery)
+        webbrowser.open(f'http://www.{newquery}.com')
+
+    elif 'google' in query:
+        newquery = query.replace('google', '').replace(" ", "")
+        webbrowser.open(f'https://www.google.com/search?q={newquery}&oq={newquery}&aqs=chrome..69i57j46l2j0j46l2j0.1908j0j1&sourceid=chrome&ie=UTF-8')
+
+    elif 'the time' in query:
+        nowtime = datetime.datetime.now().strftime("%H:%M:%S")
+        print(nowtime)
+        speak(nowtime)
+
+
+if __name__ == '__main__':
+    wishes()
+    while True:
+        query = take_commands().lower()
+        if 'exit' in query:
+            break
+        apply_command(query)
